@@ -9,7 +9,7 @@ import axios from "axios";
 // for each client)
 var baseURL = process.env.DEBUG
   ? "http://127.0.0.1:8000"
-  : "https://codeassistant.pythonanywhere.com";
+  : "https://xcodeassist.pythonanywhere.com";
 
 const api = axios.create({ baseURL: baseURL });
 
