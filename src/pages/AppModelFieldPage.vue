@@ -1,5 +1,6 @@
 <template lang>
   <div class="q-pa-sm">
+    {{ field }}
     <table>
       <tr>
         <th>Property</th>
@@ -55,10 +56,22 @@
             id=""
           >
             <option :value="null">None</option>
-            <option v-for="type in data_types" :key="type" :value="type.id">
-              {{ type.name }}
+            <option v-for="typ in data_types" :key="typ" :value="typ.id">
+              {{ typ.name }}
             </option>
           </select>
+        </td>
+      </tr>
+      <tr>
+        <td>DataType Properties</td>
+        <td>
+          <textarea
+            v-model="formData.properties"
+            @blur="updateFieldProperties"
+            cols="50"
+            rows="10"
+          ></textarea>
+          <p class="text-red">{{ formError.properties }}</p>
         </td>
       </tr>
     </table>
@@ -82,7 +95,9 @@ export default {
         data_type: null,
         widget: "",
         foreign_key: null,
+        properties: "",
       },
+      formError: {},
       field: {},
     };
   },
@@ -105,6 +120,7 @@ export default {
         .then((res) => {
           this.field = res.data;
           this.populateObject(this.field, this.formData);
+          this.formData.properties = JSON.stringify(this.formData.properties);
         });
     },
 
@@ -133,6 +149,25 @@ export default {
             //this.getField();
           }
         });
+    },
+
+    updateFieldProperties() {
+      this.formError = {};
+      var data = {};
+      try {
+        data = JSON.parse(this.formData.properties);
+        api
+          .patch(`app-model-fields/${this.$route.params.field_id}/`, {
+            properties: data,
+          })
+          .then((res) => {
+            if (res.status == 200) {
+              //this.getField();
+            }
+          });
+      } catch (error) {
+        this.formError.properties = "Invalid Json";
+      }
     },
 
     populateObject(sourceObject, targetObject) {

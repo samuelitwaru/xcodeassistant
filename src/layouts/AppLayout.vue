@@ -139,7 +139,6 @@
               />
             </template>
             <div class="q-ma-sm" align="center">
-
               <select
                 v-if="freeModels.length"
                 id="cars"
@@ -228,9 +227,9 @@ export default {
     }
 
     function createField() {
-      console.log(fieldFormData.value)
+      console.log(fieldFormData.value);
       //return
-      fieldFormData.value.app_model = route.params.model_id
+      fieldFormData.value.app_model = route.params.model_id;
       api.post(`app-model-fields/`, fieldFormData.value).then((res) => {
         getApp();
         fieldFormData.value.name = "";
