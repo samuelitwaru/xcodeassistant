@@ -1,6 +1,5 @@
 <template lang>
   <div class="q-pa-sm">
-    {{ field }}
     <table>
       <tr>
         <th>Property</th>
@@ -8,13 +7,13 @@
       </tr>
       <tr>
         <th>
-          <input type="text" v-model="formData[key]" />
+          <input type="text" v-model="key" />
         </th>
         <th></th>
       </tr>
       <tr v-for="(value, key) in formData" :key="key">
-        <td>{{ key }}</td>
-        <td>
+        <td v-if="!doNotList.includes(key)">{{ key }}</td>
+        <td v-if="!doNotList.includes(key)">
           <template v-if="typeof value === 'boolean'">
             <input
               @change="update(key)"
@@ -84,9 +83,10 @@ import { api } from "src/boot/axios";
 export default {
   data() {
     return {
-      key: null,
+      key: "",
       app_models: [],
       data_types: [],
+      doNotList: ["properties", "data_type", "foreign_key"],
       formData: {
         name: "",
         is_column_field: false,
@@ -95,7 +95,11 @@ export default {
         data_type: null,
         widget: "",
         foreign_key: null,
-        properties: "",
+        properties: {},
+        nullable: false,
+        blank: false,
+        unique: false,
+        default: "",
       },
       formError: {},
       field: {},
@@ -146,7 +150,7 @@ export default {
         })
         .then((res) => {
           if (res.status == 200) {
-            //this.getField();
+            this.getField();
           }
         });
     },

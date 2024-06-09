@@ -34,101 +34,138 @@
         </q-btn>
       </router-link>
       <!-- </q-toolbar> -->
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/generate`"
+        >Generate</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/models-dot-py`"
+        >Models.py</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/serializers-dot-py`"
+        >Serializiers.py</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/views-dot-py`"
+        >Views.py</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/viewsets-dot-py`"
+        >Viewsets.py</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/forms-dot-py`"
+        >Forms.py</router-link
+      >
+      |
+      <router-link :to="`/apps/${$route.params.app_id}/urls-dot-py`"
+        >Urls.py</router-link
+      >
     </q-header>
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
       bordered
       class="bg-grey-2"
-      :width="300"
+      :width="400"
     >
-      <q-scroll-area class="fit">
-        <q-list>
-          <router-link
+      <q-scroll-area class="fit" :visible="false">
+        <q-list class="q-mr-md">
+          <q-expansion-item
             v-for="model in app.models"
             :key="model"
-            :to="`/apps/${$route.params.app_id}/models/${model.id}`"
+            expand-icon-toggl
+            group="somegroup"
+            dense
+            dense-toggle
+            expand-separator
+            icon="fa fa-cube"
+            :label="model.name"
+            header-class="text-primary"
+            :default-opened="model.id == $route.params.model_id"
           >
-            <q-expansion-item
-              group="somegroup"
-              dense
-              dense-toggle
-              expand-separator
-              icon="fa fa-cube"
-              :label="model.name"
-              header-class="text-primary"
-              :default-opened="model.id == $route.params.model_id"
-            >
-              <template v-slot:header>
-                <q-item-section>
-                  <div>
-                    <q-avatar icon="fa fa-cube" />
-                    {{ model.name }}
-                  </div>
-                </q-item-section>
+            <template v-slot:header>
+              <q-item-section>
+                <router-link
+                  :to="`/apps/${$route.params.app_id}/models/${model.id}`"
+                >
+                  <q-avatar icon="fa fa-cube" />
+                  {{ model.name }}
+                </router-link>
+              </q-item-section>
 
-                <!-- <q-item-section>{{ model.name }}</q-item-section> -->
+              <!-- <q-item-section>{{ model.name }}</q-item-section> -->
 
-                <q-item-section side>
-                  <div class="row items-center">
+              <q-item-section side>
+                <div class="row items-center">
+                  <q-btn
+                    flat
+                    color="red"
+                    dense
+                    icon="mdi-trash-can"
+                    @click="deleteAppModel(model.id)"
+                  />
+                </div>
+              </q-item-section>
+            </template>
+            <q-card flat bordered>
+              <q-card-section class="py-1">
+                <q-list>
+                  <q-item
+                    v-for="field in model.app_model_fields"
+                    :key="field"
+                    dense
+                    v-ripple
+                    clickable
+                    :active="$route.params.field_id == field.id"
+                    active-class="menu-item-active"
+                    class="text-red q-my-xs"
+                  >
+                    <q-item-section avatar>
+                      <q-icon v-if="field.foreign_key" name="fa fa-key" />
+                      <q-icon v-else name="fa fa-atom" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <router-link
+                        :to="`/apps/${$route.params.app_id}/models/${model.id}/fields/${field.id}`"
+                      >
+                        <q-item-label>{{ field.name }}</q-item-label>
+                      </router-link>
+                    </q-item-section>
+
                     <q-btn
                       flat
                       color="red"
                       dense
-                      icon="mdi-trash-can"
-                      @click="deleteAppModel(model.id)"
+                      icon="close"
+                      @click="deleteAppModelField(field.id)"
+                    />
+                  </q-item>
+                  <div class="q-pa-sm" align="center">
+                    <input
+                      @blur="createField(model.id)"
+                      v-on:keyup.enter="createField(model.id)"
+                      v-model="fieldFormData.name"
+                      type="text"
+                      placeholder="new field"
                     />
                   </div>
-                </q-item-section>
-              </template>
-              <q-card>
-                <q-card-section class="py-1">
-                  <q-list>
-                    <router-link
-                      v-for="field in model.app_model_fields"
-                      :key="field"
-                      :to="`/apps/${$route.params.app_id}/models/${model.id}/fields/${field.id}`"
-                    >
-                      <q-item
-                        v-ripple
-                        clickable
-                        :active="$route.params.field_id == field.id"
-                        active-class="menu-item-active"
-                        class="text-red q-my-xs"
-                      >
-                        <q-item-section avatar>
-                          <q-icon name="fa fa-atom" />
-                        </q-item-section>
+                </q-list>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+          <q-separator />
+          <!-- </router-link> -->
 
-                        <q-item-section>
-                          <q-item-label>{{ field.name }}</q-item-label>
-                        </q-item-section>
-                        <q-btn
-                          flat
-                          color="red"
-                          dense
-                          icon="close"
-                          @click="deleteAppModelField(field.id)"
-                        />
-                      </q-item>
-                    </router-link>
-                    <div class="q-pa-sm" align="center">
-                      <input
-                        @blur="createField"
-                        v-on:keyup.enter="createField"
-                        v-model="fieldFormData.name"
-                        type="text"
-                        placeholder="new field"
-                      />
-                    </div>
-                  </q-list>
-                </q-card-section>
-              </q-card>
-            </q-expansion-item>
-            <q-separator />
-          </router-link>
-
-          <q-expansion-item group="somegroup" dense label="Add Model">
+          <q-expansion-item
+            class="q-ma-sm"
+            group="somegroup"
+            dense
+            label="Add Model"
+            expand-icon-toggle
+          >
             <template v-slot:header>
               <input
                 @blur="createModel"
@@ -136,27 +173,23 @@
                 v-model="formData.name"
                 type="text"
                 placeholder="new model"
+                style="width: 90%"
               />
             </template>
             <div class="q-ma-sm" align="center">
-              <select
-                v-if="freeModels.length"
-                id="cars"
-                name="cars"
-                multiple
-                style="width: 10.5rem; overflow-y: auto"
-                @dblclick="createAppModel"
-                v-model="appModelFormData.model"
-              >
-                <option
-                  v-for="model in freeModels"
-                  :key="model"
-                  option
-                  :value="model.id"
-                >
-                  {{ model.name }}
-                </option>
-              </select>
+              <q-list bordered>
+                <q-item v-for="model in freeModels" :key="model.id">
+                  <q-item-section>{{ model.name }}</q-item-section>
+                  <q-item-section>
+                    <q-btn
+                      @click="createAppModel(model.id)"
+                      dense
+                      color="primary"
+                      icon="add"
+                    />
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </div>
           </q-expansion-item>
         </q-list>
@@ -189,10 +222,11 @@ export default {
     const models = ref([]);
     const formData = {
       name: "",
+      app: route.params.app_id,
     };
 
     const appModelFormData = ref({
-      model: [],
+      model: null,
       app: route.params.app_id,
     });
 
@@ -209,7 +243,6 @@ export default {
     function getApp() {
       api.get(`apps/${route.params.app_id}/`).then((res) => {
         app.value = res.data;
-        console.log(app.value);
       });
     }
 
@@ -220,14 +253,19 @@ export default {
     }
 
     function createModel() {
-      api.post(`models/`, formData).then((res) => {
+      if (!formData.name) return;
+
+      api.post(`app-models/`, formData).then((res) => {
+        router.push(`/apps/${app.value.id}`);
+        getApp();
         getModels();
         formData.name = "";
       });
     }
 
-    function createField() {
+    function createField(app_model_id) {
       console.log(fieldFormData.value);
+      fieldFormData.value.app_model = app_model_id;
       //return
       fieldFormData.value.app_model = route.params.model_id;
       api.post(`app-model-fields/`, fieldFormData.value).then((res) => {
@@ -236,13 +274,14 @@ export default {
       });
     }
 
-    function createAppModel() {
-      appModelFormData.value["model"] = appModelFormData.value["model"][0];
-      var model = models.value.filter(
-        (model) => model.id == appModelFormData.value["model"]
-      )[0];
-      appModelFormData.value["name"] = model.name;
+    function createAppModel(modelId) {
+      appModelFormData.value["model"] = modelId;
+      var model = models.value.filter((model) => model.id == modelId)[0];
+      if (createAppModel) appModelFormData.value["name"] = model.name;
       appModelFormData.value["plural"] = model.plural;
+
+      console.log(appModelFormData.value);
+
       api.post(`app-models/`, appModelFormData.value).then((res) => {
         router.push(`/apps/${app.value.id}`);
         getApp();
@@ -286,6 +325,21 @@ export default {
       createField,
       deleteAppModel,
       deleteAppModelField,
+      // thumbStyle: {
+      //   right: "4px",
+      //   borderRadius: "5px",
+      //   backgroundColor: "#027be3",
+      //   width: "5px",
+      //   opacity: 0.75,
+      // },
+
+      barStyle: {
+        right: "2px",
+        borderRadius: "9px",
+        backgroundColor: "#027be3",
+        width: "9px",
+        opacity: 0.2,
+      },
     };
   },
 };

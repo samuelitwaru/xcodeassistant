@@ -39,6 +39,13 @@ const routes = [
     component: () => import("layouts/AppLayout.vue"),
     children: [
       { path: ":app_id", component: () => import("pages/AppPage.vue") },
+      { path: ":app_id/generate", component: () => import("pages/AppGenerationPage.vue") },
+      { path: ":app_id/models-dot-py", component: () => import("pages/ModelsDotPyPage.vue") },
+      { path: ":app_id/serializers-dot-py", component: () => import("pages/SerializersDotPyPage.vue") },
+      { path: ":app_id/views-dot-py", component: () => import("pages/ViewsDotPyPage.vue") },
+      { path: ":app_id/viewsets-dot-py", component: () => import("pages/ViewsetsDotPyPage.vue") },
+      { path: ":app_id/forms-dot-py", component: () => import("pages/FormsDotPyPage.vue") },
+      { path: ":app_id/urls-dot-py", component: () => import("pages/UrlsDotPyPage.vue") },
       {
         path: ":app_id/models/:model_id",
         component: () => import("pages/AppModelPage.vue"),

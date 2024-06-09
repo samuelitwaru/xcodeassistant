@@ -35,6 +35,17 @@
       </tr>
     </table>
     <br />
+    <div class="text-h6">{{ model.name }} Has Many</div>
+    <ul>
+      <li v-for="field in relatedFields" :key="field.id">
+        <router-link
+          :to="`/apps/${$route.params.app_id}/models/${field.app_model}`"
+        >
+          {{ field.app_model_plural || field.app_model_name }}
+        </router-link>
+      </li>
+    </ul>
+    <br />
     <div class="text-h6">Generators</div>
     <table>
       <tbody>
@@ -71,7 +82,7 @@
           </td>
         </tr>
         <tr v-for="generator in generators" :key="generator.id">
-          <td>{{ generator.generation_category }}</td>
+          <td>{{ generator.generation_category_name }}</td>
           <td>
             <textarea
               name=""
@@ -81,6 +92,7 @@
               v-model="generator.output"
             ></textarea>
             <div>
+              <button @click="deleteGenerator(generator.id)">delete</button> |
               <button @click="generate(generator.id)">generate</button>
             </div>
           </td>
@@ -99,6 +111,7 @@ export default {
       formData: {
         name: "",
         plural: "",
+        description: "",
       },
       generatorFormData: {
         app_model: this.$route.params.model_id,
@@ -108,6 +121,7 @@ export default {
       generators: [],
       generator_categories: [],
       templates: [],
+      relatedFields: [],
     };
   },
   created() {
@@ -115,11 +129,17 @@ export default {
     this.getGenerators();
     this.getGeneratorsCategories();
     this.getTemplates();
+    this.getRelatedFields();
   },
   watch: {
     "$route.params.model_id": {
       handler: function (model_id) {
         this.getModel();
+        this.getGenerators();
+        this.getGeneratorsCategories();
+        this.getTemplates();
+        this.getRelatedFields();
+        this.generatorFormData.app_model = this.$route.params.model_id;
       },
     },
   },
@@ -130,6 +150,14 @@ export default {
         .then((res) => {
           this.model = res.data;
           this.populateObject(this.model, this.formData);
+        });
+    },
+
+    getRelatedFields() {
+      this.$api
+        .get(`app-model-fields/?foreign_key=${this.$route.params.model_id}`)
+        .then((res) => {
+          this.relatedFields = res.data;
         });
     },
 
@@ -161,6 +189,14 @@ export default {
       });
     },
 
+    deleteGenerator(generatorId) {
+      this.$api.delete(`generations/${generatorId}/`).then((res) => {
+        if (res.status == 204) {
+          this.getGenerators();
+        }
+      });
+    },
+
     generate(generatorId) {
       this.$api.get(`generations/${generatorId}/generate/`).then((res) => {
         if (res.status == 200) {
@@ -175,7 +211,7 @@ export default {
     update(key) {
       console.log({ [key]: this.formData[key] });
       api
-        .patch(`models/${this.$route.params.model_id}/`, {
+        .patch(`app-models/${this.$route.params.model_id}/`, {
           [key]: this.formData[key],
         })
         .then((res) => {});
